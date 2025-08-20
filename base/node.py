@@ -9,7 +9,7 @@ reload(port)
 
 
 class Node(QGraphicsRectItem):
-    def __init__(self, x, y, width=150, height=45, label="Node"):
+    def __init__(self, x, y, width=150, height=45, label="Node", window=None):
         super().__init__(0, 0, width, height)
         self.setPos(x, y)
         self.setBrush(QColor("#e0e0e0"))
@@ -18,6 +18,8 @@ class Node(QGraphicsRectItem):
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
         self.width = width
         self.height = height
+        self.editor_window = window
+        self.label = label
 
         self.connections = []
         self.create_divides()
@@ -31,7 +33,7 @@ class Node(QGraphicsRectItem):
         middle_width = self.width * 0.6 * margin
         right_width = self.width * 0.2 - margin
 
-        self.disable_box = DisbaleButton(
+        self.disable_box = DisableButton(
             margin, margin, left_width, self.height - 2*margin, radius=6, parent=self,
             callback=self.disable_node
         )
@@ -44,6 +46,8 @@ class Node(QGraphicsRectItem):
         print("Node disabled!")
 
     def render_node(self):
+        if self.editor_window:
+            self.editor_window.set_rendered_node(self)
         print("Node rendered!")
 
         
@@ -62,7 +66,7 @@ class Node(QGraphicsRectItem):
         font_name = "FiraCode Nerd Font Mono" # make this configurable
         font = QFont(font_name, pointSize=20)
         font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 1)
-        self.node_text = QGraphicsTextItem("node", parent=self)
+        self.node_text = QGraphicsTextItem(self.label, parent=self)
         self.node_text.setFont(font)
         self.node_text.setTextInteractionFlags(Qt.TextInteractionFlag.TextEditorInteraction)
         self.node_text.setDefaultTextColor(QColor("#cacaca"))
@@ -78,6 +82,15 @@ class Node(QGraphicsRectItem):
         if pixmap.height() > max_height:
             scale_factor = max_height / pixmap.height()
             self.icon.setScale(scale_factor)
+
+    def set_rendered(self, rendered):
+        self.is_rendered = rendered
+        if rendered:
+            self.render_box.setBrush(QColor("#008cff"))
+            self.render_box.selected = True
+        else:
+            self.render_box.setBrush(QColor("#e0e0e0"))
+            self.render_box.selected = False
 
 class RenderButton(QGraphicsRectItem):
     def __init__(self, x, y, width, height, radius=8, parent=None, callback=None):
@@ -98,23 +111,20 @@ class RenderButton(QGraphicsRectItem):
         painter.drawPath(path)
 
     def mousePressEvent(self, event):
-        if self.selected:
-            self.setBrush(QColor("#e0e0e0"))
-            self.selected = False
-        elif self.callback:
-            self.callback()
-            self.setBrush(QColor("#008cff"))
-            self.selected = True
-        else:
-            print("WARNING: No callback defined for render button.")
+        self.callback()
         super().mousePressEvent(event)
 
     def hoverEnterEvent(self, event):
-        self.setBrush(QColor("#33a3ff"))  # Highlight on hover
+        if not self.selected:
+            self.setBrush(QColor("#33a3ff"))  # Highlight on hover
         super().hoverEnterEvent(event)
 
+    def hoverLeaveEvent(self, event):
+        if not self.selected:
+            self.setBrush(QColor("#e0e0e0"))
+        super().hoverLeaveEvent(event)
 
-class DisbaleButton(QGraphicsRectItem):
+class DisableButton(QGraphicsRectItem):
     def __init__(self, x, y, width, height, radius=8, parent=None, callback=None):
         super().__init__(x, y, width, height, parent)
         self.radius = radius
@@ -148,5 +158,11 @@ class DisbaleButton(QGraphicsRectItem):
         super().mousePressEvent(event)
 
     def hoverEnterEvent(self, event):
-        self.setBrush(QColor("#ffdd98"))  # Highlight on hover
+        if not self.selected:
+            self.setBrush(QColor("#ffd277"))  # Highlight on hover
         super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        if not self.selected:
+            self.setBrush(QColor("#e0e0e0"))
+        super().hoverLeaveEvent(event)
