@@ -5,6 +5,10 @@
     <img src="https://img.shields.io/badge/Qt-41CD52?style=for-the-badge&logo=Qt&logoColor=white">
 </p>
 
+<div align="center">
+    <img src="screenshots/graph.png" alt="Project Screenshot" width="700"/>
+</div>
+
 <p align="center">
 A base template for a simple Python & Qt based node editor. This repo is developement for integration into Maya_Modular_Rigging
 </p>
