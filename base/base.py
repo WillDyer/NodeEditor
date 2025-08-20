@@ -22,7 +22,7 @@ class NodeEditorView(QGraphicsView):
         self._last_pan_point = None
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.MiddleButton:
+        if event.button() == Qt.MouseButton.LeftButton and event.modifiers() & Qt.KeyboardModifier.AltModifier:
             self._last_pan_point = event.pos()
             event.accept()
         else:
@@ -30,7 +30,9 @@ class NodeEditorView(QGraphicsView):
 
     def mouseMoveEvent(self, event):
         if self._last_pan_point:
-            delta = self.mapToScene(event.pos()) - self.mapToScene(self._last_pan_point)
+            old_scene_pos = self.mapToScene(self._last_pan_point)
+            new_scene_pos = self.mapToScene(event.pos())
+            delta = new_scene_pos - old_scene_pos
             self.setTransformationAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
             self.translate(delta.x(), delta.y())
             self._last_pan_point = event.pos()
@@ -39,11 +41,35 @@ class NodeEditorView(QGraphicsView):
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if event.button() == Qt.MouseButton.MiddleButton:
+        if event.button() == Qt.MouseButton.LeftButton and event.modifiers() & Qt.KeyboardModifier.AltModifier:
             self._last_pan_point = None
             event.accept()
         else:
             super().mouseReleaseEvent(event)
+
+    def wheelEvent(self, event):
+        zoom_in_factor = 1.15
+        zoom_out_factor = 1 / zoom_in_factor
+        max_scale = 1.5
+        min_scale = 0.1
+
+        old_pos = self.mapToScene(event.position().toPoint())
+
+        if event.angleDelta().y() > 0:  # zoom in
+            zoom_factor = zoom_in_factor
+        else:
+            zoom_factor = zoom_out_factor
+
+        # Calculate new scale
+        new_scale = self.transform().m11() * zoom_factor
+        if new_scale < min_scale or new_scale > max_scale:
+            return  # stop zooming
+
+        self.scale(zoom_factor, zoom_factor)
+
+        new_pos = self.mapToScene(event.position().toPoint())
+        delta = new_pos - old_pos
+        self.translate(delta.x(), delta.y())
 
     def drawBackground(self, painter: QPainter, rect: QRectF):
         super().drawBackground(painter, rect)
@@ -66,13 +92,20 @@ class NodeEditorWindow(QMainWindow):
         self.setWindowTitle("Node Editor")
         self.resize(800, 600)
         self.scene = QGraphicsScene()
+        self.scene.setSceneRect(self.scene.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
         self.view = NodeEditorView(self.scene)
         self.setCentralWidget(self.view)
+        self.rendered_node = None
+
         self.add_nodes_and_connections()
 
     def add_nodes_and_connections(self):
-        node1 = node.Node(100, 100, label="Node 1")
-        node2 = node.Node(100, 250, label="Node 2")
+        #################################
+        # this is a temporary setup     #
+        # to demonstrate the node editor#
+        #################################
+        node1 = node.Node(100, 100, label="Node 1", window=self)
+        node2 = node.Node(100, 250, label="Node 2", window=self)
         self.scene.addItem(node1)
         self.scene.addItem(node2)
 
@@ -82,3 +115,12 @@ class NodeEditorWindow(QMainWindow):
         # track connection inside nodes
         node1.connections.append(connection)
         node2.connections.append(connection)
+
+        self.set_rendered_node(node2) # default a node to rendered
+
+    def set_rendered_node(self, node):
+        if self.rendered_node and self.rendered_node is not node:
+            self.rendered_node.set_rendered(False)
+            print(f"Node {self.rendered_node} is no longer rendered.")
+        self.rendered_node = node
+        node.set_rendered(True)
