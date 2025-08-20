@@ -53,8 +53,15 @@ class Node(QGraphicsRectItem):
         
     def port_creation(self):
         port_factory = port.Port(parent=self, width=self.width, height=self.height)
+        
         self.port_input = port_factory.create_input_port()
         self.port_output = port_factory.create_output_port()
+
+        self.port_input.parent_node = self
+        self.port_output.parent_node = self
+
+        self.port_input.port_selected.connect(self.editor_window.handle_port_selected)
+        self.port_output.port_selected.connect(self.editor_window.handle_port_selected)
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionHasChanged:
@@ -159,7 +166,7 @@ class DisableButton(QGraphicsRectItem):
 
     def hoverEnterEvent(self, event):
         if not self.selected:
-            self.setBrush(QColor("#ffd277"))  # Highlight on hover
+            self.setBrush(QColor("#ffd277"))
         super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):

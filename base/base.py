@@ -55,12 +55,11 @@ class NodeEditorView(QGraphicsView):
 
         old_pos = self.mapToScene(event.position().toPoint())
 
-        if event.angleDelta().y() > 0:  # zoom in
+        if event.angleDelta().y() > 0:
             zoom_factor = zoom_in_factor
         else:
             zoom_factor = zoom_out_factor
 
-        # Calculate new scale
         new_scale = self.transform().m11() * zoom_factor
         if new_scale < min_scale or new_scale > max_scale:
             return  # stop zooming
@@ -70,6 +69,16 @@ class NodeEditorView(QGraphicsView):
         new_pos = self.mapToScene(event.position().toPoint())
         delta = new_pos - old_pos
         self.translate(delta.x(), delta.y())
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Delete:
+            for item in self.scene().selectedItems():
+                if isinstance(item, port.Connection):
+                    self.scene().removeItem(item)
+                    del item
+            event.accept()
+        else:
+            super().keyPressEvent(event)
 
     def drawBackground(self, painter: QPainter, rect: QRectF):
         super().drawBackground(painter, rect)
@@ -96,6 +105,7 @@ class NodeEditorWindow(QMainWindow):
         self.view = NodeEditorView(self.scene)
         self.setCentralWidget(self.view)
         self.rendered_node = None
+        self.selected_ports = []
 
         self.add_nodes_and_connections()
 
@@ -109,14 +119,28 @@ class NodeEditorWindow(QMainWindow):
         self.scene.addItem(node1)
         self.scene.addItem(node2)
 
-        connection = port.Connection(node1.port_output, node2.port_input)
+        """connection = port.Connection(node1.port_output, node2.port_input)
         self.scene.addItem(connection)
 
         # track connection inside nodes
         node1.connections.append(connection)
-        node2.connections.append(connection)
+        node2.connections.append(connection)"""
 
         self.set_rendered_node(node2) # default a node to rendered
+
+    def handle_port_selected(self, selected_port):
+        if selected_port not in self.selected_ports:
+            self.selected_ports.append(selected_port)
+            if len(self.selected_ports) == 2:
+                connection = port.Connection(self.selected_ports[0], self.selected_ports[1])
+                self.scene.addItem(connection)
+
+                node1 = self.selected_ports[0].parent_node
+                node2 = self.selected_ports[1].parent_node
+
+                node1.connections.append(connection)
+                node2.connections.append(connection)
+                self.selected_ports.clear()
 
     def set_rendered_node(self, node):
         if self.rendered_node and self.rendered_node is not node:
