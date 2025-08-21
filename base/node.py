@@ -11,7 +11,7 @@ reload(text_utils)
 
 
 class Node(QGraphicsRectItem):
-    def __init__(self, x, y, width=150, height=45, label="Node", window=None):
+    def __init__(self, x, y, width=150, height=45, label="Node", icon=None, window=None):
         super().__init__(0, 0, width, height)
         self.setPos(x, y)
         self.setBrush(QColor("#e0e0e0"))
@@ -28,7 +28,7 @@ class Node(QGraphicsRectItem):
         self.create_divides()
         self.port_creation()
         self.node_name()
-        self.add_icon(path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","icons","rivet.svg"))
+        self.add_icon(path=icon)
 
     def create_divides(self):
         margin = 5
@@ -86,15 +86,19 @@ class Node(QGraphicsRectItem):
         self.node_text.document().contentsChanged.connect(lambda: text_utils.sanitise_text(self.node_text))
 
     def add_icon(self, path=None):
-        pixmap = QPixmap(path)
-        self.icon = QGraphicsPixmapItem(pixmap, parent=self)
-        self.icon.setPos(self.width / 2 - pixmap.height() / 2, self.height / 2 - pixmap.height() / 2)
+        if path is None:
+            path = "rivet.png"
+        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "icons")
+        path = os.path.join(file_path, path)
 
-        # Optional: scale icon to fit height
-        max_height = self.rect().height() - 2
+        pixmap = QPixmap(path)
+        max_height = self.height - 8
         if pixmap.height() > max_height:
-            scale_factor = max_height / pixmap.height()
-            self.icon.setScale(scale_factor)
+            pixmap = pixmap.scaledToHeight(max_height, Qt.TransformationMode.SmoothTransformation)
+
+        self.icon = QGraphicsPixmapItem(pixmap, parent=self)
+        rect = self.icon.boundingRect()
+        self.icon.setPos(self.width / 2 - rect.width() / 2, self.height / 2 - rect.height() / 2)
 
     def set_rendered(self, rendered):
         self.is_rendered = rendered
