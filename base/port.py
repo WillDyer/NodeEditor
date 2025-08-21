@@ -25,28 +25,41 @@ class Port:
     
 
 class Connection(QGraphicsPathItem):
-    def __init__(self, start_port: QGraphicsEllipseItem, end_port: QGraphicsEllipseItem):
+    def __init__(self, start_port: QGraphicsEllipseItem, end_port=None):
         super().__init__()
+        self.setZValue(-1)
         self.start_port = start_port
         self.end_port = end_port
         self.selected = False
-        self.setPen(QPen(QColor("#2eaccc"), 2))
-        self.default_pen = QPen(QColor("#2eaccc"), 2)
-        self.hover_pen = QPen(QColor("#6dbacd"), 2)
-        self.setZValue(-1)
+        self.end_pos = None
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setAcceptHoverEvents(True)
+        self.setPen(QPen(QColor("#2eaccc"), 2))
+        self.default_pen = QPen(QColor("#2eaccc"), 2)
+        self.hover_pen = QPen(QColor("#6dbacd"), 2)
         self.update_path()
 
-    def update_path(self):
+    def update_path(self, end_pos=None):
         start = self.start_port.mapToScene(self.start_port.boundingRect().center())
-        end = self.end_port.mapToScene(self.end_port.boundingRect().center())
+        if self.end_port is not None:
+            end = self.end_port.mapToScene(self.end_port.boundingRect().center())
+        elif end_pos is not None:
+            end = end_pos
+        elif self.end_pos is not None:
+            end = self.end_pos
+        else:
+            print("ERROR: Can't update path, not drawing path.")
+            return
+        
         path = QPainterPath(start)
         dy = max(abs(end.y() - start.y()) * 0.5, 90)
         path.cubicTo(start.x(), start.y() + dy, end.x(), end.y() - dy, end.x(), end.y())
-
         self.setPath(path)
+
+    def set_end_pos(self, pos):
+        self.end_pos = pos
+        self.update_path()
 
     def paint(self, painter, option, widget=None):
         painter.setPen(self.pen())
