@@ -1,15 +1,11 @@
-from PySide6.QtWidgets import (
-    QGraphicsView, QGraphicsScene, QGraphicsItem,
-    QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsPathItem, QMainWindow
-)
-from PySide6.QtGui import QPainterPath, QPen, QColor, QPainter
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QMainWindow)
+from PySide6.QtGui import QPainterPath, QPen, QColor, QPainter, QCursor
 from PySide6.QtCore import Qt, QPointF, QRectF
 from importlib import reload
 
 
-from base import node, port
-module = [node, port]
+from base import node, port, node_menu
+module = [node, port, node_menu]
 
 for py in module:
     reload(py)
@@ -140,12 +136,12 @@ class NodeEditorWindow(QMainWindow):
         self.scene.addItem(node1)
         self.scene.addItem(node2)
 
-        """connection = port.Connection(node1.port_output, node2.port_input)
+        connection = port.Connection(node1.port_output, node2.port_input)
         self.scene.addItem(connection)
 
         # track connection inside nodes
         node1.connections.append(connection)
-        node2.connections.append(connection)"""
+        node2.connections.append(connection)
 
         self.set_rendered_node(node2) # default a node to rendered
 
@@ -177,3 +173,10 @@ class NodeEditorWindow(QMainWindow):
             print(f"Node {self.rendered_node} is no longer rendered.")
         self.rendered_node = node
         node.set_rendered(True)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Tab:
+            pallete = node_menu.NodePalette(parent=self, editor_window=self)
+            pallete.move(QCursor.pos())
+            pallete.exec()
+        return super().keyPressEvent(event)
