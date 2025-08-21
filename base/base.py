@@ -95,12 +95,26 @@ class NodeEditorView(QGraphicsView):
             painter.drawLine(rect.left(), y, rect.right(), y)
 
 
+class NodeEditorScene(QGraphicsScene):
+    def __init__(self, window, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.window = window
+
+    def mousePressEvent(self, event):
+        item = self.itemAt(event.scenePos(), self.views()[0].transform())
+
+        if item is None:
+            self.window.selected_ports.clear()
+            print("Debug: Background clicked, clearing selected ports.")
+        super().mousePressEvent(event)
+
+
 class NodeEditorWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Node Editor")
         self.resize(800, 600)
-        self.scene = QGraphicsScene()
+        self.scene = NodeEditorScene(self)
         self.scene.setSceneRect(self.scene.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
         self.view = NodeEditorView(self.scene)
         self.setCentralWidget(self.view)
