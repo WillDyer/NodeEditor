@@ -128,8 +128,8 @@ class NodeEditorWindow(QMainWindow):
         # this is a temporary setup     #
         # to demonstrate the node editor#
         #################################
-        node1 = node.Node(100, 100, label="Node 1", window=self)
-        node2 = node.Node(100, 250, label="Node 2", window=self)
+        node1 = node.Node(100, 100, label="Node_1", window=self)
+        node2 = node.Node(100, 250, label="Node_2", window=self)
         self.scene.addItem(node1)
         self.scene.addItem(node2)
 
