@@ -105,9 +105,15 @@ class NodeEditorScene(QGraphicsScene):
 
         if item is None:
             self.window.selected_ports.clear()
-            print("Debug: Background clicked, clearing selected ports.")
+        if self.window.temp_connection is not None:
+            self.removeItem(self.window.temp_connection)
+            self.window.temp_connection = None
         super().mousePressEvent(event)
 
+    def mouseMoveEvent(self, event):
+        if self.window.temp_connection is not None:
+            self.window.temp_connection.set_end_pos(event.scenePos())
+        super().mouseMoveEvent(event)
 
 class NodeEditorWindow(QMainWindow):
     def __init__(self):
@@ -120,6 +126,7 @@ class NodeEditorWindow(QMainWindow):
         self.setCentralWidget(self.view)
         self.rendered_node = None
         self.selected_ports = []
+        self.temp_connection = None
 
         self.add_nodes_and_connections()
 
@@ -145,6 +152,9 @@ class NodeEditorWindow(QMainWindow):
     def handle_port_selected(self, selected_port):
         if selected_port not in self.selected_ports:
             self.selected_ports.append(selected_port)
+            if len(self.selected_ports) == 1:
+                self.temp_connection = port.Connection(self.selected_ports[0])
+                self.scene.addItem(self.temp_connection)
             if len(self.selected_ports) == 2:
                 connection = port.Connection(self.selected_ports[0], self.selected_ports[1])
                 self.scene.addItem(connection)
@@ -154,6 +164,11 @@ class NodeEditorWindow(QMainWindow):
 
                 node1.connections.append(connection)
                 node2.connections.append(connection)
+
+                if self.temp_connection is not None:
+                    self.scene.removeItem(self.temp_connection)
+                    del self.temp_connection
+                    self.temp_connection = None
                 self.selected_ports.clear()
 
     def set_rendered_node(self, node):
