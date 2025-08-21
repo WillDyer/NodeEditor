@@ -1,11 +1,13 @@
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsTextItem, QGraphicsPixmapItem
-from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPixmap
+from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPixmap, QKeyEvent
 from PySide6.QtCore import Qt
 from importlib import reload
 import os, sys
 
 from base import port
+from base.utils import text_utils
 reload(port)
+reload(text_utils)
 
 
 class Node(QGraphicsRectItem):
@@ -50,8 +52,7 @@ class Node(QGraphicsRectItem):
         if self.editor_window:
             self.editor_window.set_rendered_node(self)
         print("Node rendered!")
-
-        
+    
     def port_creation(self):
         port_factory = port.Port(parent=self, width=self.width, height=self.height)
         
@@ -81,6 +82,8 @@ class Node(QGraphicsRectItem):
         self.node_text.setTextInteractionFlags(Qt.TextInteractionFlag.TextEditorInteraction)
         self.node_text.setDefaultTextColor(QColor("#cacaca"))
         self.node_text.setPos(self.width +5, self.height /2 - 20)
+        
+        self.node_text.document().contentsChanged.connect(lambda: text_utils.sanitise_text(self.node_text))
 
     def add_icon(self, path=None):
         pixmap = QPixmap(path)
