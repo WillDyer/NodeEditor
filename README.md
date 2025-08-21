@@ -10,5 +10,5 @@
 </div>
 
 <p align="center">
-A base template for a simple Python & Qt based node editor. This repo is developement for integration into Maya_Modular_Rigging
+A base template for a simple Python & Qt based node editor.\This repo is developement for integration into Maya_Modular_Rigging\This repo uses Houdinis logo currently before I make my own.
 </p>
