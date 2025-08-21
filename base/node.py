@@ -20,6 +20,7 @@ class Node(QGraphicsRectItem):
         self.height = height
         self.editor_window = window
         self.label = label
+        self.name = label
 
         self.connections = []
         self.create_divides()
@@ -67,6 +68,8 @@ class Node(QGraphicsRectItem):
         if change == QGraphicsItem.ItemPositionHasChanged:
             for connection in self.connections:
                 connection.update_path()
+        if change == QGraphicsItem.ItemSelectedChange and value:
+            print(f"Node Selected: {self}")
         return super().itemChange(change, value)
     
     def node_name(self):
@@ -98,6 +101,10 @@ class Node(QGraphicsRectItem):
         else:
             self.render_box.setBrush(QColor("#e0e0e0"))
             self.render_box.selected = False
+
+    def __repr__(self):
+        pos = self.pos()
+        return f"<Node name=({self.name}), pos=({pos.x():.1f}, {pos.y():.1f}), unique_py_id=({hex(id(self))})>"
 
 class RenderButton(QGraphicsRectItem):
     def __init__(self, x, y, width, height, radius=8, parent=None, callback=None):

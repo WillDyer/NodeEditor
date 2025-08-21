@@ -10,14 +10,14 @@ class Port:
         self.height = height
 
     def create_input_port(self):
-        port_input = NoHighlightEllipse(self.width/2-10, 0-18, 16, 16, self.parent)
+        port_input = NoHighlightEllipse(self.width/2-10, 0-18, 16, 16, self.parent, "input")
         port_input.setBrush(QColor("#3498db"))
         port_input.setPen(QPen(Qt.GlobalColor.black, 1))
         port_input.setFlag(QGraphicsObject.GraphicsItemFlag.ItemIsSelectable, True)
         return port_input
 
     def create_output_port(self):
-        port_output = NoHighlightEllipse(self.width/2-10, self.height+2, 16, 16, self.parent)
+        port_output = NoHighlightEllipse(self.width/2-10, self.height+2, 16, 16, self.parent, "output")
         port_output.setBrush(QColor("#3498db"))
         port_output.setPen(QPen(Qt.GlobalColor.black, 1))
         port_output.setFlag(QGraphicsObject.GraphicsItemFlag.ItemIsSelectable, True)
@@ -73,13 +73,14 @@ class Connection(QGraphicsPathItem):
 
 class NoHighlightEllipse(QGraphicsObject):
     port_selected = Signal(object)
-    def __init__(self, x, y, w, h, parent=None):
+    def __init__(self, x, y, w, h, parent=None, type=None):
         super().__init__(parent)
         self.setAcceptHoverEvents(True)
         self.setPos(x, y)
         self._rect = QRectF(0, 0, w, h)
         self._brush = QColor("#3498db")
         self._pen = QPen(Qt.GlobalColor.black, 1)
+        self.name = f"{parent.name}.{type}"
 
     def boundingRect(self):
         return self._rect
@@ -113,6 +114,10 @@ class NoHighlightEllipse(QGraphicsObject):
 
     def itemChange(self, change, value):
         if change == QGraphicsObject.ItemSelectedChange and value:
-            print(value)
+            print("Port selected:", self)
             self.port_selected.emit(self)
         return super().itemChange(change, value)
+    
+    def __repr__(self):
+        pos = self.pos()
+        return f"<Node name=({self.name}), parent=({self.parent}), pos=({pos.x():.1f}, {pos.y():.1f}), unique_py_id=({hex(id(self))})>"
