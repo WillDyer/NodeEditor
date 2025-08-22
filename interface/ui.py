@@ -4,7 +4,9 @@ from PySide6.QtCore import Qt
 from importlib import reload
 
 from base import base
+from interface import ui_elements
 reload(base)
+reload(ui_elements)
 
 
 class Interface(QWidget):
@@ -28,6 +30,12 @@ class Interface(QWidget):
         self.horizontalLayout.addWidget(self.splitter)
 
         self.splitter.setSizes([600, 300])
+        self.splitter.setHandleWidth(3)
+        self.splitter.setStyleSheet("""
+            QSplitter::handle {
+                background-color: #2e2e2e;
+            }
+        """)
 
     def node_editor(self):
         self.node_editor_widget = QWidget()
@@ -41,3 +49,11 @@ class Interface(QWidget):
         self.temp_widget = QWidget()
         self.temp_widget.setMinimumWidth(250)
         self.temp_property = QVBoxLayout(self.temp_widget)
+
+        ui_elements.label(text="Properties", ptr="properties_label", parent=self.temp_property)
+        ui_elements.text_field(text="text field",ptr="text_field", parent=self.temp_property)
+        ui_elements.button(text="button", ptr="button", parent=self.temp_property)
+        ui_elements.checkbox(text="checkbox", ptr="checkbox", enable=True, parent=self.temp_property)
+        ui_elements.dropdown(text="dropdown", ptr="dropdown", items=["item1", "item2"], parent=self.temp_property)
+        ui_elements.slider(text="slider", ptr="slider", min_value=0, max_value=10, step=1, parent=self.temp_property)
+        self.temp_property.addStretch()
