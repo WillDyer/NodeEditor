@@ -9,7 +9,7 @@ from functools import partial
 from base import node
 importlib.reload(node)
 
-nodes_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'nodes')
+nodes_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'base', 'nodes')
 node_files = [
     os.path.splitext(f)[0]
     for f in os.listdir(nodes_dir)
@@ -18,7 +18,7 @@ node_files = [
 node_files = [f for f in node_files if f]
 modules = {}
 for module_name in node_files:
-    full_module_name = f"nodes.{module_name}"
+    full_module_name = f"base.nodes.{module_name}"
     modules[module_name] = importlib.import_module(full_module_name)
     importlib.reload(modules[module_name])
 
@@ -47,7 +47,7 @@ class NodePalette(QDialog):
         self.find_nodes()
 
     def find_nodes(self):
-        node_files = [".".join(f.split(".")[:-1]) for f in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'nodes'))]
+        node_files = [".".join(f.split(".")[:-1]) for f in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'base', 'nodes'))]
         try: node_files.remove("")
         except ValueError: pass
         node_files = [f for f in node_files if f not in ["__init__"]]
