@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QMainWindow)
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QSplitter)
 from PySide6.QtGui import QPainterPath, QPen, QColor, QPainter, QCursor
 from PySide6.QtCore import Qt, QPointF, QRectF
 from importlib import reload
@@ -114,10 +114,9 @@ class NodeEditorScene(QGraphicsScene):
 class NodeEditorWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Node Editor")
-        self.resize(800, 600)
+        self.resize(1000, 600)
         self.scene = NodeEditorScene(self)
-        self.scene.setSceneRect(self.scene.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
+        self.scene.setSceneRect(self.scene.itemsBoundingRect().adjusted(-1500, -1500, 1500, 1500))
         self.view = NodeEditorView(self.scene)
         self.setCentralWidget(self.view)
         self.rendered_node = None
@@ -131,8 +130,8 @@ class NodeEditorWindow(QMainWindow):
         # this is a temporary setup     #
         # to demonstrate the node editor#
         #################################
-        node1 = node.Node(100, 100, label="Node_1", window=self)
-        node2 = node.Node(100, 250, label="Node_2", window=self)
+        node1 = node.Node(0, 0, label="Node_1", window=self)
+        node2 = node.Node(0, 200, label="Node_2", window=self)
         self.scene.addItem(node1)
         self.scene.addItem(node2)
 

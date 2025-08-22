@@ -88,7 +88,7 @@ class Node(QGraphicsRectItem):
     def add_icon(self, path=None):
         if path is None:
             path = "rivet.png"
-        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "icons")
+        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "interface", "icons")
         path = os.path.join(file_path, path)
 
         pixmap = QPixmap(path)
