@@ -1,0 +1,43 @@
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QSplitter)
+from PySide6.QtCore import Qt
+
+from importlib import reload
+
+from base import base
+reload(base)
+
+
+class Interface(QWidget):
+    def __init__(self, *args, **kwargs):
+        super(Interface, self).__init__(*args, **kwargs)
+        self.setWindowFlags(Qt.Window)
+        self.setWindowTitle("Node Editor")
+        self.initUI()
+
+    def initUI(self):
+        self.horizontalLayout = QHBoxLayout(self)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.splitter = QSplitter(Qt.Horizontal)
+
+        self.node_editor()
+        self.splitter.addWidget(self.node_editor_widget)
+
+        self.temp_property_widget()
+        self.splitter.addWidget(self.temp_widget)
+
+        self.horizontalLayout.addWidget(self.splitter)
+
+        self.splitter.setSizes([600, 300])
+
+    def node_editor(self):
+        self.node_editor_widget = QWidget()
+        self.node_editor_widget.setMinimumWidth(250)
+        self.node_editor_layout = QVBoxLayout(self.node_editor_widget)
+        self.node_editor_layout.setContentsMargins(0, 0, 0, 0)
+        self.node_editor = base.NodeEditorWindow()
+        self.node_editor_layout.addWidget(self.node_editor)
+
+    def temp_property_widget(self):
+        self.temp_widget = QWidget()
+        self.temp_widget.setMinimumWidth(250)
+        self.temp_property = QVBoxLayout(self.temp_widget)
