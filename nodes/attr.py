@@ -4,13 +4,13 @@ from base import node
 reload(node)
 
 
-class Null():
+class Attr():
     def __init__(self, editor_window):
         self.editor_window = editor_window
         self.scene = editor_window.scene
         self.node_type = "common"
-        self.node_id = "null"
-        self.node_icon = "autorig.png"
+        self.node_id = "attr"
+        self.node_icon = "rivet.png"
 
         self.null_node = node.Node(0,0, label=self.node_id, icon=self.node_icon, window=editor_window)
         
