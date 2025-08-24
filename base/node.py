@@ -1,17 +1,18 @@
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsTextItem, QGraphicsPixmapItem
-from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPixmap, QKeyEvent
-from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPixmap
+from PySide6.QtCore import Qt, QTimer
 from importlib import reload
-import os, sys
+import os
 
 from base import port
-from base.utils import text_utils
+from base.utils import text_utils, node_utils
 reload(port)
 reload(text_utils)
+reload(node_utils)
 
 
 class Node(QGraphicsRectItem):
-    def __init__(self, x, y, width=150, height=45, label="Node", icon=None, window=None):
+    def __init__(self, x, y, width=150, height=45, label="Node", icon=None, window=None, property_widget=None):
         super().__init__(0, 0, width, height)
         self.setPos(x, y)
         self.setBrush(QColor("#e0e0e0"))
@@ -21,6 +22,7 @@ class Node(QGraphicsRectItem):
         self.width = width
         self.height = height
         self.editor_window = window
+        self.property_widget = property_widget
         self.label = label
         self.name = label
 
@@ -69,8 +71,13 @@ class Node(QGraphicsRectItem):
         if change == QGraphicsItem.ItemPositionHasChanged:
             for connection in self.connections:
                 connection.update_path()
-        if change == QGraphicsItem.ItemSelectedChange and value:
-            print(f"Node Selected: {self}")
+        if change == QGraphicsItem.ItemSelectedChange:
+            if self.property_widget:
+                if value:  # Node selected
+                    node_utils.remove_last_widget(self.property_widget)
+                    node_utils.load_widget_for(self.label, self.property_widget)
+                else:  # Node deselected
+                    node_utils.remove_last_widget(self.property_widget)
         return super().itemChange(change, value)
     
     def node_name(self):

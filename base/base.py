@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QSplitter)
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsScene, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QSplitter, QGraphicsItem)
 from PySide6.QtGui import QPainterPath, QPen, QColor, QPainter, QCursor
 from PySide6.QtCore import Qt, QPointF, QRectF
 from importlib import reload
@@ -114,7 +114,7 @@ class NodeEditorScene(QGraphicsScene):
         super().mouseMoveEvent(event)
 
 class NodeEditorWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, temp_widget):
         super().__init__()
         self.resize(1000, 600)
         self.scene = NodeEditorScene(self)
@@ -122,8 +122,9 @@ class NodeEditorWindow(QMainWindow):
         self.view = NodeEditorView(self.scene)
         self.setCentralWidget(self.view)
         self.rendered_node = None
-        self.selected_ports = []
         self.temp_connection = None
+        self.selected_ports = []
+        self.temp_widget = temp_widget
 
         self.add_nodes_and_connections()
 
@@ -132,7 +133,7 @@ class NodeEditorWindow(QMainWindow):
         # this is a temporary setup     #
         # to demonstrate the node editor#
         #################################
-        node1 = node.Node(0, 0, label="Node_1", window=self)
+        """node1 = node.Node(0, 0, label="Node_1", window=self)
         node2 = node.Node(0, 200, label="Node_2", window=self)
         self.scene.addItem(node1)
         self.scene.addItem(node2)
@@ -144,7 +145,7 @@ class NodeEditorWindow(QMainWindow):
         node1.connections.append(connection)
         node2.connections.append(connection)
 
-        self.set_rendered_node(node2) # default a node to rendered
+        self.set_rendered_node(node2)""" # default a node to rendered
 
     def handle_port_selected(self, selected_port):
         if selected_port not in self.selected_ports:
@@ -177,7 +178,7 @@ class NodeEditorWindow(QMainWindow):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Tab:
-            pallete = node_menu.NodePalette(parent=self, editor_window=self)
+            pallete = node_menu.NodePalette(parent=self, editor_window=self, temp_widget=self.temp_widget)
             pallete.move(QCursor.pos())
             pallete.exec()
         return super().keyPressEvent(event)

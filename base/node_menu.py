@@ -24,10 +24,11 @@ for module_name in node_files:
 
 
 class NodePalette(QDialog):
-    def __init__(self, parent=None, editor_window=None):
+    def __init__(self, parent=None, editor_window=None, temp_widget=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Popup)
         self.editor_window = editor_window
+        self.temp_widget = temp_widget
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(5, 0, 0, 5)
@@ -82,7 +83,8 @@ class NodePalette(QDialog):
         scene_pos = view.mapToScene(view.mapFromGlobal(global_pos))
         
         #new_node = node.Node(scene_pos.x(), scene_pos.y(), label=node_type, window=self.editor_window)
-        new_node_class = node_class(self.editor_window)
+        print(self.temp_widget)
+        new_node_class = node_class(self.editor_window, self.temp_widget)
     
         self.editor_window.scene.addItem(new_node_class.return_widget())
         self.close()
