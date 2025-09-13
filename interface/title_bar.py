@@ -22,7 +22,7 @@ class TitleBarWidget(QWidget):
         self.is_maximized = False
         self.setAutoFillBackground(True)
         palette = self.palette()
-        palette.setColor(QPalette.Window, QColor("#161616") )  # dark gray
+        palette.setColor(QPalette.Window, QColor("#1B1B1B") )  # dark gray
         self.setPalette(palette)
 
         self.setFixedHeight(35)
