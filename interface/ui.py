@@ -1,24 +1,31 @@
-from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QSplitter)
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QSplitter, QMainWindow)
+from PySide6.QtCore import Qt, QEvent
 
 from importlib import reload
 
 from base import base
-from interface import ui_elements
+from interface import ui_elements, title_bar
 reload(base)
 reload(ui_elements)
+reload(title_bar)
 
 
-class Interface(QWidget):
+class Interface(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(Interface, self).__init__(*args, **kwargs)
-        self.setWindowFlags(Qt.Window)
         self.setWindowTitle("Node Editor")
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.initUI()
 
     def initUI(self):
-        self.horizontalLayout = QHBoxLayout(self)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        central_widget = QWidget()
+        main_layout = QVBoxLayout(central_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        self.title_bar = title_bar.TitleBarWidget(self)
+        main_layout.addWidget(self.title_bar)
+
         self.splitter = QSplitter(Qt.Horizontal)
 
         self.temp_property_widget()
@@ -26,8 +33,7 @@ class Interface(QWidget):
 
         self.splitter.addWidget(self.node_editor_widget)
         self.splitter.addWidget(self.temp_widget)
-
-        self.horizontalLayout.addWidget(self.splitter)
+        main_layout.addWidget(self.splitter)
 
         self.splitter.setSizes([600, 300])
         self.splitter.setHandleWidth(3)
@@ -36,6 +42,11 @@ class Interface(QWidget):
                 background-color: #2e2e2e;
             }
         """)
+        self.setCentralWidget(central_widget)
+
+    def title_bar_widget(self):
+        self.title_bar = title_bar.TitleBarWidget(self)
+        self.titlebar_layout.addWidget(self.title_bar)
 
     def node_editor(self):
         self.node_editor_widget = QWidget()
@@ -59,3 +70,9 @@ class Interface(QWidget):
         ui_elements.dropdown(text="dropdown", ptr="dropdown", items=["item1", "item2"], parent=self.temp_property)
         ui_elements.slider(text="slider", ptr="slider", min_value=0, max_value=10, step=1, parent=self.temp_property)
         self.temp_property.addStretch()"""
+
+    def changeEvent(self, event):
+            if event.type() == QEvent.Type.WindowStateChange:
+                self.title_bar.window_state_changed(self.windowState())
+            super().changeEvent(event)
+            event.accept()
