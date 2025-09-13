@@ -1,0 +1,118 @@
+from PySide6.QtCore import QSize, Qt, QTimer
+from PySide6.QtGui import QPalette
+from PySide6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QStyle,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
+    QMenuBar
+)
+
+
+class TitleBarWidget(QWidget):
+    def __init__(self, parent_window):
+        super().__init__()
+        self.parent_window = parent_window
+        self.initial_pos = None
+        self.is_maximized = False
+
+        self.setFixedHeight(35)
+        self.title_bar_layout = QHBoxLayout()
+        self.title_bar_layout.setContentsMargins(1, 1, 1, 1)
+        self.title_bar_layout.setSpacing(2)
+        self.setLayout(self.title_bar_layout)
+
+        #self.menu_items()
+        self.title_widget()
+        self.window_controls()
+
+
+    def title_widget(self):
+        self.title = QLabel("NodeEditor")
+        self.title.setStyleSheet(
+            """font-weight: bold;
+            """
+        )
+        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title_bar_layout.addWidget(self.title)
+
+    def menu_items(self):
+        menu_bar = QMenuBar(self)
+        #menu_bar.setFixedHeight(20)
+        menu_bar.setStyleSheet("""
+            QMenuBar {
+                padding: 1px;
+            }
+            QMenuBar::item {
+                padding: 2px 8px;
+            }
+        """)
+        file_menu = menu_bar.addMenu("&File")
+        file_menu.addAction("Open")
+        file_menu.addAction("Save")
+        file_menu.addAction("Exit")
+
+        self.title_bar_layout.setMenuBar(menu_bar)
+        print("menu bar added")
+
+    def window_controls(self):
+        # Minimize
+        self.min_button = QToolButton()
+        self.min_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarMinButton))
+        # below crashing app
+        self.min_button.clicked.connect(lambda: self.parent_window.showMinimized())
+
+        # Maximize / Restore toggle
+        self.max_button = QToolButton()
+        self.max_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarMaxButton))
+        self.max_button.clicked.connect(self.toggle_max_restore)
+
+        # Close
+        self.close_button = QToolButton()
+        self.close_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarCloseButton))
+        self.close_button.clicked.connect(lambda: self.parent_window.close())
+
+        for btn in [self.min_button, self.max_button, self.close_button]:
+            btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            btn.setFixedSize(QSize(28, 28))
+            self.title_bar_layout.addWidget(btn)
+
+    def toggle_max_restore(self):
+        window = self.parent_window
+        screen_geom = window.screen().availableGeometry()
+
+        if getattr(self, 'is_maximized', False):
+            window.showNormal()
+            normal_width, normal_height = 1000, 600
+            window.resize(normal_width, normal_height)
+
+            x = screen_geom.x() + (screen_geom.width() - normal_width) // 2
+            y = screen_geom.y() + (screen_geom.height() - normal_height) // 2
+            window.move(x, y)
+            self.is_maximized = False
+        else:
+            screen_geom = window.screen().availableGeometry()
+            window.setGeometry(screen_geom)
+            self.is_maximized = True
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.initial_pos = event.position().toPoint()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.initial_pos is not None and not self.parent_window.isMaximized():
+            delta = event.position().toPoint() - self.initial_pos
+            self.parent_window.move(
+                self.parent_window.x() + delta.x(),
+                self.parent_window.y() + delta.y()
+            )
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self.initial_pos = None
+        super().mouseReleaseEvent(event)
