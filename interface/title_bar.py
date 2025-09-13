@@ -1,5 +1,5 @@
 from PySide6.QtCore import QSize, Qt, QTimer
-from PySide6.QtGui import QPalette
+from PySide6.QtGui import QPalette, QColor, QPixmap, QPainter, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -9,7 +9,8 @@ from PySide6.QtWidgets import (
     QToolButton,
     QVBoxLayout,
     QWidget,
-    QMenuBar
+    QMenuBar,
+    QSizePolicy
 )
 
 
@@ -19,6 +20,10 @@ class TitleBarWidget(QWidget):
         self.parent_window = parent_window
         self.initial_pos = None
         self.is_maximized = False
+        self.setAutoFillBackground(True)
+        palette = self.palette()
+        palette.setColor(QPalette.Window, QColor("#161616") )  # dark gray
+        self.setPalette(palette)
 
         self.setFixedHeight(35)
         self.title_bar_layout = QHBoxLayout()
@@ -26,7 +31,7 @@ class TitleBarWidget(QWidget):
         self.title_bar_layout.setSpacing(2)
         self.setLayout(self.title_bar_layout)
 
-        #self.menu_items()
+        self.menu_items()
         self.title_widget()
         self.window_controls()
 
@@ -42,43 +47,68 @@ class TitleBarWidget(QWidget):
 
     def menu_items(self):
         menu_bar = QMenuBar(self)
-        #menu_bar.setFixedHeight(20)
+        menu_bar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         menu_bar.setStyleSheet("""
             QMenuBar {
-                padding: 1px;
+                font-family: "FiraCode Nerd Font Mono";
+                font-size: 10pt;
+                margin: 5px;
+                padding: 0px;
+                border: none;
             }
             QMenuBar::item {
-                padding: 2px 8px;
+                margin: 0px;
+                padding: 0px 5px;  /* just enough to separate items */
             }
         """)
+
         file_menu = menu_bar.addMenu("&File")
         file_menu.addAction("Open")
         file_menu.addAction("Save")
         file_menu.addAction("Exit")
 
-        self.title_bar_layout.setMenuBar(menu_bar)
+        # Add menu bar as a normal widget
+        self.title_bar_layout.addWidget(menu_bar)
         print("menu bar added")
 
     def window_controls(self):
         # Minimize
         self.min_button = QToolButton()
-        self.min_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarMinButton))
+        self.min_button.setIcon(white_icon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMinButton)))
         # below crashing app
         self.min_button.clicked.connect(lambda: self.parent_window.showMinimized())
 
         # Maximize / Restore toggle
         self.max_button = QToolButton()
-        self.max_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarMaxButton))
+        self.max_button.setIcon(white_icon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMaxButton)))
         self.max_button.clicked.connect(self.toggle_max_restore)
 
         # Close
         self.close_button = QToolButton()
-        self.close_button.setIcon(self.style().standardIcon(QStyle.SP_TitleBarCloseButton))
+        self.close_button.setIcon(white_icon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton)))
         self.close_button.clicked.connect(lambda: self.parent_window.close())
+
+        button_style = """
+                    QToolButton {
+                        background-color: transparent;
+                        border: none;
+                        border-radius: 4px;
+                        color: #ffffff;
+                    }
+
+                    QToolButton:hover {
+                        background-color: #505050;
+                    }
+
+                    QToolButton:pressed {
+                        background-color: #1c1c1c;
+                    }
+                    """
 
         for btn in [self.min_button, self.max_button, self.close_button]:
             btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             btn.setFixedSize(QSize(28, 28))
+            btn.setStyleSheet(button_style)
             self.title_bar_layout.addWidget(btn)
 
     def toggle_max_restore(self):
@@ -116,3 +146,22 @@ class TitleBarWidget(QWidget):
     def mouseReleaseEvent(self, event):
         self.initial_pos = None
         super().mouseReleaseEvent(event)
+
+def white_icon(style_icon, size=28):
+    # Get standard pixmap from style
+    pixmap = style_icon.pixmap(size, size)
+    
+    # Create a transparent pixmap
+    white_pixmap = QPixmap(pixmap.size())
+    white_pixmap.fill(QColor(0, 0, 0, 0))  # fully transparent
+    
+    # Paint the pixmap white
+    painter = QPainter(white_pixmap)
+    painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_Source)
+    painter.drawPixmap(0, 0, pixmap)
+    
+    painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+    painter.fillRect(white_pixmap.rect(), QColor(255, 255, 255))  # white overlay
+    painter.end()
+    
+    return QIcon(white_pixmap)
