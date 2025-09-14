@@ -10,8 +10,10 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QMenuBar,
-    QSizePolicy
+    QSizePolicy,
+    QSpacerItem
 )
+import os
 
 
 class TitleBarWidget(QWidget):
@@ -22,7 +24,7 @@ class TitleBarWidget(QWidget):
         self.is_maximized = False
         self.setAutoFillBackground(True)
         palette = self.palette()
-        palette.setColor(QPalette.Window, QColor("#1B1B1B") )  # dark gray
+        palette.setColor(QPalette.Window, QColor("#1B1B1B"))
         self.setPalette(palette)
 
         self.setFixedHeight(35)
@@ -37,13 +39,28 @@ class TitleBarWidget(QWidget):
 
 
     def title_widget(self):
-        self.title = QLabel("NodeEditor")
-        self.title.setStyleSheet(
-            """font-weight: bold;
-            """
+        self.title_layout = QHBoxLayout()
+
+        self.logo_holder = QLabel()
+        self.logo = QPixmap(os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons", "autorig.png"))
+        self.logo_scaled = self.logo.scaled(
+            20, 20,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
         )
-        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.title_bar_layout.addWidget(self.title)
+        self.logo_holder.setPixmap(self.logo_scaled)
+        self.logo_holder.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+        self.title = QLabel("NodeEditor")
+        self.title.setStyleSheet("font-weight: bold;")
+        self.title.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+        self.title_layout.addWidget(self.logo_holder)
+        self.title_layout.addWidget(self.title)
+        self.title_bar_layout.addStretch()
+        self.title_bar_layout.addLayout(self.title_layout)
+
+        return self.title_layout
 
     def menu_items(self):
         menu_bar = QMenuBar(self)
@@ -67,9 +84,12 @@ class TitleBarWidget(QWidget):
         file_menu.addAction("Save")
         file_menu.addAction("Exit")
 
+        pref_menu = menu_bar.addMenu("&Pref")
+        pref_menu.addAction("Font")
+        pref_menu.addAction("Themes")
+
         # Add menu bar as a normal widget
         self.title_bar_layout.addWidget(menu_bar)
-        print("menu bar added")
 
     def window_controls(self):
         # Minimize
@@ -105,11 +125,14 @@ class TitleBarWidget(QWidget):
                     }
                     """
 
+        self.title_bar_layout.addStretch()
         for btn in [self.min_button, self.max_button, self.close_button]:
             btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             btn.setFixedSize(QSize(28, 28))
+            btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             btn.setStyleSheet(button_style)
             self.title_bar_layout.addWidget(btn)
+        
 
     def toggle_max_restore(self):
         window = self.parent_window
