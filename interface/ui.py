@@ -4,10 +4,11 @@ from PySide6.QtCore import Qt, QEvent
 from importlib import reload
 
 from base import base
-from interface import ui_elements, title_bar
+from interface import ui_elements, title_bar, lower_bar
 reload(base)
 reload(ui_elements)
 reload(title_bar)
+reload(lower_bar)
 
 
 class Interface(QMainWindow):
@@ -42,11 +43,11 @@ class Interface(QMainWindow):
                 background-color: #2e2e2e;
             }
         """)
-        self.setCentralWidget(central_widget)
 
-    def title_bar_widget(self):
-        self.title_bar = title_bar.TitleBarWidget(self)
-        self.titlebar_layout.addWidget(self.title_bar)
+        self.lower_bar = lower_bar.LowerBarWidget(self)
+        main_layout.addWidget(self.lower_bar)
+
+        self.setCentralWidget(central_widget)
 
     def node_editor(self):
         self.node_editor_widget = QWidget()
