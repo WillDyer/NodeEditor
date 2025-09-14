@@ -140,7 +140,7 @@ class TitleBarWidget(QWidget):
 
         if getattr(self, 'is_maximized', False):
             window.showNormal()
-            normal_width, normal_height = 1000, 600
+            normal_width, normal_height = 1300, 700
             window.resize(normal_width, normal_height)
 
             x = screen_geom.x() + (screen_geom.width() - normal_width) // 2
