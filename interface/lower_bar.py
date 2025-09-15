@@ -53,7 +53,7 @@ class LowerBarWidget(QWidget):
                 font-family: "FiraCode Nerd Font Mono";
                 font-size: 10pt;
                 background-color: #1B1B1B;
-                
+                padding-left: 2px;
             }
         """)
 

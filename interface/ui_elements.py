@@ -231,9 +231,11 @@ class slider():
         label.setFixedWidth(100)
 
         spin = SpinBoxNoArrows(min_value, max_value, step)
+        spin.setObjectName(f"{ptr}_spin")
         spin.setValue(0)
 
         slider = QSlider(Qt.Horizontal, widget)
+        slider.setObjectName(f"{ptr}_slider")
         slider.setMinimum(min_value)
         slider.setMaximum(max_value)
         slider.setValue(min_value)

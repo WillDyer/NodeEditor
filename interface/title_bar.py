@@ -42,7 +42,7 @@ class TitleBarWidget(QWidget):
         self.title_layout = QHBoxLayout()
 
         self.logo_holder = QLabel()
-        self.logo = QPixmap(os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons", "autorig.png"))
+        self.logo = QPixmap(os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons", "shroomsoup.png"))
         self.logo_scaled = self.logo.scaled(
             20, 20,
             Qt.AspectRatioMode.KeepAspectRatio,
