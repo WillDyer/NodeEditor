@@ -27,6 +27,8 @@ class Node(QGraphicsRectItem):
         self.name = label
 
         self.connections = []
+        self.last_selected_node = []
+        self.properties = {}
         self.create_divides()
         self.port_creation()
         self.node_name()
@@ -71,14 +73,54 @@ class Node(QGraphicsRectItem):
         if change == QGraphicsItem.ItemPositionHasChanged:
             for connection in self.connections:
                 connection.update_path()
-        if change == QGraphicsItem.ItemSelectedChange:
-            if self.property_widget:
-                if value:  # Node selected
-                    node_utils.remove_last_widget(self.property_widget)
-                    node_utils.load_widget_for(self.label, self.property_widget)
-                else:  # Node deselected
-                    node_utils.remove_last_widget(self.property_widget)
+
+        if change == QGraphicsItem.ItemSelectedHasChanged:
+            scene = self.scene()
+            if not scene:
+                return super().itemChange(change, value)
+
+            previous_node = getattr(scene, "last_selected_node", None)
+
+            if value:  # Node selected
+                selected_nodes = scene.selectedItems()
+                if selected_nodes:
+                    selected_node = selected_nodes[0]
+                    if isinstance(selected_node, Node):
+                        scene.previous_node = getattr(scene, "selected_node", None)
+                        scene.selected_node = selected_node
+                        print(f"New Selection: {selected_node}, last selection: {previous_node}")
+
+            else:  # Node deselected
+                current_selected = getattr(scene, "selected_node", None)
+                scene.previous_node = current_selected
+                scene.selected_node = None
+                print(f"New Selection: {None}, Last Selection: {current_selected}")
+
+            """if getattr(scene, "previous_node", None):
+                print("saving and removing ui")
+                self.save_properties_and_remove_ui()
+
+            if getattr(scene, "selected_node", None):
+                print("loading and restore ui")
+                self.load_ui_and_restore_properties()"""
+
         return super().itemChange(change, value)
+    
+    def save_properties_and_remove_ui(self):
+        if self.property_widget:
+            self.properties = node_utils.save_widget_values(self.property_widget)
+            node_utils.remove_last_widget(self.property_widget)
+
+    def load_ui_and_restore_properties(self):
+        if self.property_widget:
+            node_utils.remove_last_widget(self.property_widget)
+            property_class = node_utils.load_widget_for(self.label, self.property_widget)
+            # print(f"prop_class: {property_class}")
+            if property_class:
+                layout = property_class.return_layout()
+                # print(f"layout: {layout}")
+                if layout:
+                    node_utils.restore_widget_property(layout, self.properties)
     
     def node_name(self):
         font_name = "FiraCode Nerd Font Mono" # make this configurable

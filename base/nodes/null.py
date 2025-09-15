@@ -20,3 +20,6 @@ class Null():
 class NullProperties():
     def __init__(self, property_widget):
         print("No Widget for a null node, empty ui")
+
+    def return_layout(self):
+        return None

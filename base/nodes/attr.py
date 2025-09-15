@@ -39,3 +39,6 @@ class AttrProperties():
         ui_elements.slider(text="slider", ptr="slider", min_value=0, max_value=10, step=1, parent=self.temp_property)
         self.temp_property.addStretch()
         text_utils.disable_tab_focus(self.temp_property)
+
+    def return_layout(self):
+        return self.temp_property

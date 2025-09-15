@@ -97,6 +97,7 @@ class NodeEditorScene(QGraphicsScene):
     def __init__(self, window, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.window = window
+        self.last_selected_node = None
 
     def mousePressEvent(self, event):
         item = self.itemAt(event.scenePos(), self.views()[0].transform())
