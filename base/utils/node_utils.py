@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget, QLayout, QComboBox, QLineEdit, QCheckBox,
 
 
 last_node = None
+property = {}
 
 
 def load_widget_for(node, property_widget):
@@ -41,9 +42,7 @@ def remove_last_widget(property_widget):
                 if widget:
                     widget.setParent(None)
                     widget.deleteLater()
-            old_layout.deleteLater()
-            property_widget.setLayout(None)
-        return
+            QWidget().setLayout(old_layout)
 
     if isinstance(property_widget, QLayout):
         while property_widget.count():
@@ -55,7 +54,6 @@ def remove_last_widget(property_widget):
 
 
 def save_widget_values(widget):
-    property = {}
     for child in widget.findChildren(QWidget):
         name = child.objectName()
         if not name:
@@ -71,8 +69,6 @@ def save_widget_values(widget):
             property[name] = child.value()
         else:
             pass
-
-        print(f"saved properties: {property}")
 
     return property
 
@@ -97,10 +93,10 @@ def restore_widget_property(layout, properties: dict):
         if not isinstance(child, actionable_types):
             continue
         name = child.objectName()
-        if not name or name not in properties:
+        if name not in properties:
             continue
 
-        print(f"restoring {name}: {properties[name]}")
+        # print(f"restoring {name}: {properties[name]}")
 
         if isinstance(child, QComboBox):
             child.setCurrentIndex(properties[name])

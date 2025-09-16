@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsTextItem, QGraphicsPixmapItem
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsTextItem, QGraphicsPixmapItem, QWidget
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPixmap
 from PySide6.QtCore import Qt, QTimer
 from importlib import reload
@@ -82,27 +82,32 @@ class Node(QGraphicsRectItem):
             previous_node = getattr(scene, "last_selected_node", None)
 
             if value:  # Node selected
-                selected_nodes = scene.selectedItems()
-                if selected_nodes:
-                    selected_node = selected_nodes[0]
-                    if isinstance(selected_node, Node):
-                        scene.previous_node = getattr(scene, "selected_node", None)
-                        scene.selected_node = selected_node
-                        print(f"New Selection: {selected_node}, last selection: {previous_node}")
+                if getattr(scene, "selected_node", None) and getattr(scene, "selected_node", None) != self:
+                    scene.previous_node = getattr(scene, "selected_node", None)
+
+                # Now set this as the active node
+                scene.selected_node = self
+                print(f"\nNew Selection: {getattr(scene, 'selected_node', None)},\nPrevious: {getattr(scene, 'previous_node', None)}\n")
 
             else:  # Node deselected
-                current_selected = getattr(scene, "selected_node", None)
-                scene.previous_node = current_selected
-                scene.selected_node = None
-                print(f"New Selection: {None}, Last Selection: {current_selected}")
+                if getattr(scene, "selected_node", None) == self:
+                    scene.previous_node = scene.selected_node
+                    scene.selected_node = None
+                    print(f"\nDeselected: {getattr(scene, 'selected_node', None)},\nPrevious: {getattr(scene, 'previous_node', None)}\n")
 
-            """if getattr(scene, "previous_node", None):
-                print("saving and removing ui")
-                self.save_properties_and_remove_ui()
 
-            if getattr(scene, "selected_node", None):
-                print("loading and restore ui")
-                self.load_ui_and_restore_properties()"""
+            previous_node = getattr(scene, "previous_node", None)
+            selected_node = getattr(scene, "selected_node", None)
+
+            # Save and remove UI for previous node if it exists
+            if previous_node:
+                print(f"Saving and removing UI for previous node: {previous_node}")
+                previous_node.save_properties_and_remove_ui()
+
+            # Load and restore UI for selected node if it exists
+            if selected_node:
+                print(f"Loading and restoring UI for selected node: {selected_node}")
+                selected_node.load_ui_and_restore_properties()
 
         return super().itemChange(change, value)
     
@@ -112,15 +117,19 @@ class Node(QGraphicsRectItem):
             node_utils.remove_last_widget(self.property_widget)
 
     def load_ui_and_restore_properties(self):
-        if self.property_widget:
-            node_utils.remove_last_widget(self.property_widget)
-            property_class = node_utils.load_widget_for(self.label, self.property_widget)
-            # print(f"prop_class: {property_class}")
-            if property_class:
-                layout = property_class.return_layout()
-                # print(f"layout: {layout}")
-                if layout:
-                    node_utils.restore_widget_property(layout, self.properties)
+        if not self.property_widget:
+            return
+
+        node_utils.remove_last_widget(self.property_widget)
+
+        property_class = node_utils.load_widget_for(self.label, self.property_widget)
+        if property_class:
+            layout = property_class.return_layout()
+            if layout:
+                self.property_widget.setLayout(layout)
+
+                if hasattr(self, "properties") and self.properties is not None:
+                    node_utils.restore_widget_property(self.property_widget.layout(), self.properties)
     
     def node_name(self):
         font_name = "FiraCode Nerd Font Mono" # make this configurable
